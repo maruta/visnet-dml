@@ -230,7 +230,7 @@
                 });
 
             svg.selectAll(".node")
-                .data(Object.values(nodes))
+                .data(d3.values(nodes))
                 .enter().append("circle")
                 .attr('class', function(d) {
                     return 'node ' + selectorSanitize(d.label) + " " + (d.category === undefined ? '' : selectorSanitize(d.category));
