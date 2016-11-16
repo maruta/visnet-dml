@@ -161,8 +161,8 @@
             .append("g");
         svg_base.append("rect")
             .attr("class", "overlay")
-            .attr("width", width)
-            .attr("height", height);
+            .attr("width", "100%")
+            .attr("height", "100%");
 
         var svg = svg_base
             .call(d3.zoom().scaleExtent([0.6, 3]).on("zoom", zoom))
