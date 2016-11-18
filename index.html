@@ -118,8 +118,17 @@
         padding: 2px 4px;
         background: rgba(34, 51, 112, 0.6);
         pointer-events: none;
-        font-family: Arial;
+        font-family: Arial sans-serif;
         font-size: 14px;
+    }
+    .tooltip .citation{
+      font-size:80%;
+    }
+    .tooltip .cname{
+      font-weight:bolder;
+    }
+    .tooltip .cnum{
+      font-weight:bolder;
     }
 </style>
 
@@ -130,7 +139,7 @@
         var width = 960,
             height = 500,
             asratio = height / width,
-            xdomain = [-1800, 2400],
+            xdomain = [-400, 1100],
             ydomainsize = (xdomain[1] - xdomain[0]) * asratio,
             ydomaincenter = 0;
         ydomain = [ydomaincenter - ydomainsize / 2, ydomaincenter + ydomainsize / 2];
@@ -157,7 +166,7 @@
 
         var svg_base = d3.select("body").append("svg")
             .attr("preserveAspectRatio", "xMinYMin meet")
-            .attr("viewBox", "0 0 width height")
+            .attr("viewBox", "0 0 "+width+" "+height)
             .append("g");
         svg_base.append("rect")
             .attr("class", "overlay")
@@ -181,12 +190,12 @@
             var nodes = {};
             data.nodes.forEach(function(d) {
                 nodes[d.id] = {
-                    x: d.y,
-                    y: d.x,
-                    label: d.label,
+                    x: d.x,
+                    y: d.y,
+                    label: d.id,
                     category: d.attributes.category,
                     id: d.id,
-                    size: 0
+                    size: d.attributes.cited
                 };
             });
             data.edges.forEach(function(d) {
@@ -205,8 +214,6 @@
                     source: d.source,
                     target: d.target
                 };
-                nodes[d.source].size += d.size;
-                nodes[d.target].size += d.size;
                 edges.push(edge);
             });
             var wScale = d3.scaleLinear().domain([50, 8500]).range([0.5, 10]);
@@ -246,7 +253,7 @@
                     tooltip.transition()
                         .duration(10)
                         .style("opacity", .9);
-                    tooltip.html(d.label)
+                    tooltip.html("<span class='cname'>"+d.label+"</span><br><span class='citation'>cited by <span class='cnum'>"+d.size+"</span></span>")
                         .style("left", (d3.event.pageX + 5) + "px")
                         .style("top", (d3.event.pageY - 18) + "px");
                 })
