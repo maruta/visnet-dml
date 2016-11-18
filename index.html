@@ -109,7 +109,6 @@
     .edge.active {
         stroke: #ff0000;
         stroke-opacity: 1;
-        z-index: 100;
     }
 
     .tooltip {
@@ -118,7 +117,7 @@
         padding: 2px 4px;
         background: rgba(34, 51, 112, 0.6);
         pointer-events: none;
-        font-family: Arial sans-serif;
+        font-family: Arial, sans-serif;
         font-size: 14px;
     }
     .tooltip .citation{
@@ -139,9 +138,9 @@
         var width = 960,
             height = 500,
             asratio = height / width,
-            xdomain = [-400, 1100],
+            xdomain = [-700, 1000],
             ydomainsize = (xdomain[1] - xdomain[0]) * asratio,
-            ydomaincenter = 0;
+            ydomaincenter = -100;
         ydomain = [ydomaincenter - ydomainsize / 2, ydomaincenter + ydomainsize / 2];
 
         function selectorSanitize(val) {
@@ -165,7 +164,7 @@
             }
 
         var svg_base = d3.select("body").append("svg")
-            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("preserveAspectRatio", "xMidYMid meet")
             .attr("viewBox", "0 0 "+width+" "+height)
             .append("g");
         svg_base.append("rect")
