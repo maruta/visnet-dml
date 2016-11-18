@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<meta property="og:title" content="Visialization of Citation Network" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://maruta.github.io/visnet-dml/" />
+<meta property="og:image" content="ogpimage.png" />
+
+<style>
+    html{
+        width:100%;
+        height:100%;
+    }
+    body {
+        font: 11px sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background:#00042e;
+    }
+    svg {
+        width:100%;
+        height:100%;
+    }
+    #note {
+        pointer-events: none;
+        position: absolute;
+        bottom: 0;
+        font-size: 9px;
+        font-weight: 200;
+        margin-left: 20px;
+        color: #cccccc;
+    }
+
+    h2 {
+        font-size: 10px;
+        font-weight: inherit;
+        margin-bottom: 0;
+    }
+
+    h3 {
+        margin-top: 0;
+        font-size: 10px;
+        font-weight: inherit;
+    }
+
+    #note a {
+        pointer-events: all;
+        color: inherit;
+    }
+
+    ol {
+        padding-left: 2em;
+        margin-bottom: 0;
+    }
+
+    ol li {
+        list-style-type: none;
+        counter-increment: cnt;
+        position: relative;
+    }
+
+    ol li:before {
+        display: marker;
+        position: absolute;
+        left: -2em;
+        content: "[" counter(cnt) "] ";
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .node {
+        stroke: #666;
+        stroke-opacity: 1;
+        stroke-width: 0.1px;
+        opacity: 1;
+        fill: #fff;
+    }
+
+    .node.Automatica {
+        fill: #ff8585;
+        stroke: #000;
+    }
+
+    .node.ICML {
+        fill: #9affa4;
+        stroke: #000;
+    }
+
+    .node.active {
+        fill: #ff4d00;
+        stroke-width: 1.5px;
+        stroke: #ff4d00;
+    }
+
+    .edge {
+        fill: none;
+        stroke: #3c74b5;
+        stroke-opacity: 0.4;
+    }
+
+    .edge.active {
+        stroke: #ff0000;
+        stroke-opacity: 1;
+    }
+
+    .tooltip {
+        position: absolute;
+        color: #fff;
+        padding: 2px 4px;
+        background: rgba(34, 51, 112, 0.6);
+        pointer-events: none;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+    .tooltip .citation{
+      font-size:80%;
+    }
+    .tooltip .cname{
+      font-weight:bolder;
+    }
+    .tooltip .cnum{
+      font-weight:bolder;
+    }
+</style>
+
+<body>
+    <script src="//d3js.org/d3.v4.min.js"></script>
+
+    <script>
+        var width = 960,
+            height = 500,
+            asratio = height / width,
+            xdomain = [-7000, 10000],
+            ydomainsize = (xdomain[1] - xdomain[0]) * asratio,
+            ydomaincenter = -100;
+        ydomain = [ydomaincenter - ydomainsize / 2, ydomaincenter + ydomainsize / 2];
+
+        function selectorSanitize(val) {
+            return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
+        }
+
+        var xValue = function(d) {
+                return d.x;
+            },
+            xScale = d3.scaleLinear().domain(xdomain).range([0, width]),
+            xMap = function(d) {
+                return xScale(xValue(d));
+            }
+
+        var yValue = function(d) {
+                return d.y;
+            },
+            yScale = d3.scaleLinear().domain(ydomain).range([height, 0]),
+            yMap = function(d) {
+                return yScale(yValue(d));
+            }
+
+        var svg_base = d3.select("body").append("svg")
+            .attr("preserveAspectRatio", "xMidYMid slice")
+            .attr("viewBox", "0 0 "+width+" "+height)
+            .append("g");
+        svg_base.append("rect")
+            .attr("class", "overlay")
+            .attr("width", "100%")
+            .attr("height", "100%");
+
+        var svg = svg_base
+            .call(d3.zoom().scaleExtent([0.6, 30]).on("zoom", zoom))
+            .append("g");
+
+        function zoom() {　
+            svg.attr("transform", d3.event.transform);
+        }
+
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        d3.json("data.full.json", function(error, data) {
+            var edges = [];
+            var nodes = {};
+            data.nodes.forEach(function(d) {
+                nodes[d.id] = {
+                    x: d.x,
+                    y: d.y,
+                    label: d.id,
+                    category: d.attributes.category,
+                    id: d.id,
+                    size: d.attributes.cited
+                };
+            });
+            data.edges.forEach(function(d) {
+                var edge = {
+                    points: [{
+                        x: nodes[d.source].x,
+                        y: nodes[d.source].y
+                    }, {
+                        x: (nodes[d.source].x + nodes[d.target].x) / 2 + (nodes[d.source].y - nodes[d.target].y) * 0.3,
+                        y: (nodes[d.source].y + nodes[d.target].y) / 2 - (nodes[d.source].x - nodes[d.target].x) * 0.3,
+                    }, {
+                        x: nodes[d.target].x,
+                        y: nodes[d.target].y
+                    }],
+                    weight: d.size,
+                    source: d.source,
+                    target: d.target
+                };
+                edges.push(edge);
+            });
+            var wScale = d3.scaleLinear().domain([50, 30000]).range([0.1, 10]);
+            var lineFunction = d3.line().x(function(d) {
+                return xScale(d.x);
+            }).y(function(d) {
+                return yScale(d.y);
+            }).curve(d3.curveCatmullRom);
+
+            svg.selectAll(".edge")
+                .data(edges)
+                .enter().append("path")
+                .attr("class", function(d) {
+                    return "edge " + "edge-" + selectorSanitize(d.source) + " edge-" + selectorSanitize(d.target);
+                })
+                .attr("stroke-width", function(d) {
+                    return wScale(d.weight)
+                })
+                .attr("d", function(d) {
+                    return lineFunction(d.points);
+                });
+
+            svg.selectAll(".node")
+                .data(d3.values(nodes))
+                .enter().append("circle")
+                .attr('class', function(d) {
+                    return 'node ' + selectorSanitize(d.label) + " " + (d.category === undefined ? '' : selectorSanitize(d.category));
+                })
+                .attr("cx", xMap)
+                .attr("cy", yMap)
+                .attr("r", function(d) {
+                    return 0.1 * Math.pow(d.size, 0.2)
+                })
+                .on("mouseover", function(d) {
+                    d3.select(this).classed('active', true);
+                    d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('active', true);
+                    tooltip.transition()
+                        .duration(10)
+                        .style("opacity", .9);
+                    tooltip.html("<span class='cname'>"+d.label+"</span><br><span class='citation'>cited by <span class='cnum'>"+d.size+"</span></span>")
+                        .style("left", (d3.event.pageX + 5) + "px")
+                        .style("top", (d3.event.pageY - 18) + "px");
+                })
+                .on("mouseout", function(d) {
+                    d3.select(this).classed('active', false);
+                    d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('active', false);
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+        });
+    </script>
+    <div id="note">
+        <h2>Visualization of Citation Network</h2>
+        <h3>by Ichiro Maruta</h3>
+        <p>
+            This visualization is based on <a href="https://aminer.org/citation">Citation Network Dataset</a> by <a href="https://aminer.org/">AMiner</a> [1]<br>
+            <ol>
+                <li>Jie Tang, Jing Zhang, Limin Yao, Juanzi Li, Li Zhang, and Zhong Su.<br> ArnetMiner: Extraction and Mining of Academic Social Networks. <br> In Proceedings of SIGKDD'2008. pp.990-998.</li>
+            </ol>
+        </p>
+    </div>
+</body>
+
+</html>
