@@ -1,140 +1,149 @@
 <!DOCTYPE html>
 <html>
-<meta charset="utf-8">
-<meta property="og:title" content="Visialization of Citation Network" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://maruta.github.io/visnet-dml/" />
-<meta property="og:image" content="ogpimage.png" />
 
-<style>
-    html{
-        width:100%;
-        height:100%;
-    }
-    body {
-        font: 11px sans-serif;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        position: relative;
-        background:#00042e;
-    }
-    svg {
-        width:100%;
-        height:100%;
-    }
-    #note {
-        pointer-events: none;
-        position: absolute;
-        bottom: 0;
-        font-size: 9px;
-        font-weight: 200;
-        margin-left: 20px;
-        color: #cccccc;
-    }
+<head>
+    <meta charset="utf-8">
+    <meta property="og:title" content="Visialization of Citation Network" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maruta.github.io/visnet-dml/full/" />
+    <meta property="og:image" content="ogpimage.png" />
 
-    h2 {
-        font-size: 10px;
-        font-weight: inherit;
-        margin-bottom: 0;
-    }
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
 
-    h3 {
-        margin-top: 0;
-        font-size: 10px;
-        font-weight: inherit;
-    }
+        body {
+            font: 11px sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #00042e;
+        }
 
-    #note a {
-        pointer-events: all;
-        color: inherit;
-    }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
 
-    ol {
-        padding-left: 2em;
-        margin-bottom: 0;
-    }
+        #note {
+            pointer-events: none;
+            position: absolute;
+            bottom: 0;
+            font-size: 9px;
+            font-weight: 200;
+            margin-left: 20px;
+            color: #cccccc;
+        }
 
-    ol li {
-        list-style-type: none;
-        counter-increment: cnt;
-        position: relative;
-    }
+        h2 {
+            font-size: 10px;
+            font-weight: inherit;
+            margin-bottom: 0;
+        }
 
-    ol li:before {
-        display: marker;
-        position: absolute;
-        left: -2em;
-        content: "[" counter(cnt) "] ";
-    }
+        h3 {
+            margin-top: 0;
+            font-size: 10px;
+            font-weight: inherit;
+        }
 
-    .overlay {
-        fill: none;
-        pointer-events: all;
-    }
+        #note a {
+            pointer-events: all;
+            color: inherit;
+        }
 
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
+        ol {
+            padding-left: 2em;
+            margin-bottom: 0;
+        }
 
-    .node {
-        stroke: #666;
-        stroke-opacity: 1;
-        stroke-width: 0.1px;
-        opacity: 1;
-        fill: #fff;
-    }
+        ol li {
+            list-style-type: none;
+            counter-increment: cnt;
+            position: relative;
+        }
 
-    .node.Automatica {
-        fill: #ff8585;
-        stroke: #000;
-    }
+        ol li:before {
+            display: marker;
+            position: absolute;
+            left: -2em;
+            content: "[" counter(cnt) "] ";
+        }
 
-    .node.ICML {
-        fill: #9affa4;
-        stroke: #000;
-    }
+        .overlay {
+            fill: none;
+            pointer-events: all;
+        }
 
-    .node.active {
-        fill: #ff4d00;
-        stroke-width: 1.5px;
-        stroke: #ff4d00;
-    }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
 
-    .edge {
-        fill: none;
-        stroke: #3c74b5;
-        stroke-opacity: 0.4;
-    }
+        .node {
+            stroke: #666;
+            stroke-opacity: 1;
+            stroke-width: 0.1px;
+            opacity: 1;
+            fill: #fff;
+        }
 
-    .edge.active {
-        stroke: #ff0000;
-        stroke-opacity: 1;
-    }
+        .node.Automatica {
+            fill: #ff8585;
+            stroke: #000;
+        }
 
-    .tooltip {
-        position: absolute;
-        color: #fff;
-        padding: 2px 4px;
-        background: rgba(34, 51, 112, 0.6);
-        pointer-events: none;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-    }
-    .tooltip .citation{
-      font-size:80%;
-    }
-    .tooltip .cname{
-      font-weight:bolder;
-    }
-    .tooltip .cnum{
-      font-weight:bolder;
-    }
-</style>
+        .node.ICML {
+            fill: #9affa4;
+            stroke: #000;
+        }
+
+        .node.active {
+            fill: #ff4d00;
+            stroke-width: 1.5px;
+            stroke: #ff4d00;
+        }
+
+        .edge {
+            fill: none;
+            stroke: #3c74b5;
+            stroke-opacity: 0.4;
+        }
+
+        .edge.active {
+            stroke: #ff0000;
+            stroke-opacity: 1;
+        }
+
+        .tooltip {
+            position: absolute;
+            color: #fff;
+            padding: 2px 4px;
+            background: rgba(34, 51, 112, 0.6);
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .tooltip .citation {
+            font-size: 80%;
+        }
+
+        .tooltip .cname {
+            font-weight: bolder;
+        }
+
+        .tooltip .cnum {
+            font-weight: bolder;
+        }
+    </style>
+</head>
 
 <body>
     <script src="//d3js.org/d3.v4.min.js"></script>
@@ -170,7 +179,7 @@
 
         var svg_base = d3.select("body").append("svg")
             .attr("preserveAspectRatio", "xMidYMid slice")
-            .attr("viewBox", "0 0 "+width+" "+height)
+            .attr("viewBox", "0 0 " + width + " " + height)
             .append("g");
         svg_base.append("rect")
             .attr("class", "overlay")
@@ -257,7 +266,7 @@
                     tooltip.transition()
                         .duration(10)
                         .style("opacity", .9);
-                    tooltip.html("<span class='cname'>"+d.label+"</span><br><span class='citation'>cited by <span class='cnum'>"+d.size+"</span></span>")
+                    tooltip.html("<span class='cname'>" + d.label + "</span><br><span class='citation'>cited by <span class='cnum'>" + d.size + "</span></span>")
                         .style("left", (d3.event.pageX + 5) + "px")
                         .style("top", (d3.event.pageY - 18) + "px");
                 })
