@@ -1,6 +1,6 @@
-Visualization of citation network around machine learning and control theory
-https://maruta.github.io/visnet-dml/
-and full network version **(Heavy)**
+Visualization of citation network around machine learning and control theory  
+https://maruta.github.io/visnet-dml/  
+and full network version **(Heavy)**  
 https://maruta.github.io/visnet-dml/full/
 
 This visualization is based on [Citation Network Dataset](https://aminer.org/citation) by [Aminer](https://aminer.org/) [1].
