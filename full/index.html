@@ -21,7 +21,7 @@
             width: 100%;
             height: 100%;
             position: relative;
-            background: #00042e;
+            background: rgb(0, 4, 46);
         }
 
         svg {
@@ -110,6 +110,12 @@
             stroke: #ff4d00;
         }
 
+        .node.searched {
+            fill: #fff500;
+            stroke-width: 1.5px;
+            stroke: #fff500;
+        }
+
         .edge {
             fill: none;
             stroke: #3c74b5;
@@ -118,6 +124,11 @@
 
         .edge.active {
             stroke: #ff0000;
+            stroke-opacity: 1;
+        }
+
+        .edge.searched {
+            stroke: #fff500;
             stroke-opacity: 1;
         }
 
@@ -142,23 +153,38 @@
         .tooltip .cnum {
             font-weight: bolder;
         }
+
+        #searchbox {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            font-weight: 200;
+            width: 20em;
+            padding: 5px;
+            background: rgba(0, 4, 46, 0.5);
+            border: solid 0.5px #cccccc;
+            color: #cccccc;
+        }
+
     </style>
 </head>
 
 <body>
+
     <script src="//d3js.org/d3.v4.min.js"></script>
 
     <script>
         var width = 960,
             height = 500,
             asratio = height / width,
-            xdomain = [-7000, 10000],
+            xdomain = [-9000, 9000],
             ydomainsize = (xdomain[1] - xdomain[0]) * asratio,
-            ydomaincenter = -100;
+            ydomaincenter = -1500;
         ydomain = [ydomaincenter - ydomainsize / 2, ydomaincenter + ydomainsize / 2];
 
         function selectorSanitize(val) {
-            return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
+            return "sel" + val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
         }
 
         var xValue = function(d) {
@@ -192,15 +218,53 @@
 
         function zoom() {　
             svg.attr("transform", d3.event.transform);
+            if (tooltip_target != null) {
+                placeTooltip(tooltip_target);
+            }
         }
 
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
 
+        var tooltip_target = null;
+
+        function showTooltip(tgt) {
+            tooltip_target = tgt;
+            var d = tgt.data()[0];
+            tooltip.transition()
+                .duration(10)
+                .style("opacity", .9);
+            tooltip.html("<span class='cname'>" + d.label + "</span><br><span class='citation'>cited by <span class='cnum'>" + d.size + "</span></span>")
+            placeTooltip(tgt);
+        }
+
+        function placeTooltip(tgt) {
+            var ctm = tgt.node().getCTM();
+            var coords = getScreenCoords(tgt.attr("cx"), tgt.attr("cy"), ctm);
+            tooltip.style("left", (coords.x + 5) + "px")
+                .style("top", (coords.y - 18) + "px");
+        }
+
+        function hideTooltip() {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        }
+
+        function getScreenCoords(x, y, ctm) {
+            var xn = ctm.e + x * ctm.a + y * ctm.c;
+            var yn = ctm.f + x * ctm.b + y * ctm.d;
+            return {
+                x: xn,
+                y: yn
+            };
+        }
+
         d3.json("data.full.json", function(error, data) {
             var edges = [];
             var nodes = {};
+            var searchNodeList = document.getElementById('nodelist');
             data.nodes.forEach(function(d) {
                 nodes[d.id] = {
                     x: d.x,
@@ -210,6 +274,9 @@
                     id: d.id,
                     size: d.attributes.cited
                 };
+                var option = document.createElement('option');
+                option.value = d.id;
+                searchNodeList.appendChild(option);
             });
             data.edges.forEach(function(d) {
                 var edge = {
@@ -263,12 +330,7 @@
                 .on("mouseover", function(d) {
                     d3.select(this).classed('active', true);
                     d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('active', true);
-                    tooltip.transition()
-                        .duration(10)
-                        .style("opacity", .9);
-                    tooltip.html("<span class='cname'>" + d.label + "</span><br><span class='citation'>cited by <span class='cnum'>" + d.size + "</span></span>")
-                        .style("left", (d3.event.pageX + 5) + "px")
-                        .style("top", (d3.event.pageY - 18) + "px");
+                    showTooltip(d3.select(this));
                 })
                 .on("mouseout", function(d) {
                     d3.select(this).classed('active', false);
@@ -277,7 +339,32 @@
                         .duration(500)
                         .style("opacity", 0);
                 });
+
         });
+
+        var oldquery = "";
+
+        function updateSearch(e) {
+            var query = selectorSanitize(e.value);
+            if (query != "") {
+                var searched = d3.select("." + query);
+                if (!searched.empty()) {
+                    searched.classed('searched', true);
+                    var d = searched.data()[0];
+                    d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('searched', true);
+                    showTooltip(searched);
+                } else {
+                    hideTooltip();
+                }
+                if (query != oldquery) {
+                    if (oldquery != "") {
+                        d3.select("." + oldquery).classed('searched', false);
+                        d3.selectAll('.edge-' + oldquery).classed('searched', false);
+                    }
+                    oldquery = query;
+                }
+            }
+        }
     </script>
     <div id="note">
         <h2>Visualization of Citation Network</h2>
@@ -289,6 +376,9 @@
             </ol>
         </p>
     </div>
+    <input id="searchbox" name="searchbox" type="text" placeholder="search..." list="nodelist" oninput="updateSearch(this)" />
+    <datalist id="nodelist"></datalist>
+
 </body>
 
 </html>
