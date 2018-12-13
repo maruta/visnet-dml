@@ -1,150 +1,200 @@
 <!DOCTYPE html>
 <html>
-<meta charset="utf-8">
 
-<style>
-    html{
-        width:100%;
-        height:100%;
-    }
-    body {
-        font: 11px sans-serif;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-    svg {
-        width:100%;
-        height:100%;
-    }
-    #note {
-        pointer-events: none;
-        position: absolute;
-        bottom: 0;
-        font-size: 9px;
-        font-weight: 200;
-        margin-left: 20px;
-        color: #223370;
-    }
+<head>
+    <meta charset="utf-8">
+    <title lang="en">Visialization of Citation Network</title>
+    <title lang="ja">学会間の引用関係の可視化</title>
+    <meta name="description" lang="en" content="Visualization of academic conferences networked by citation">
+    <meta name="description" lang="ja" content="学会を引用関係に基づいて可視化したものです．ノードが学会，エッジが引用関係をあらわしています．">
 
-    h2 {
-        font-size: 10px;
-        font-weight: inherit;
-        margin-bottom: 0;
-    }
+    <meta property="og:title" lang="en" content="Visialization of Citation Network" />
+    <meta property="og:title" lang="ja" content="学会間の引用関係の可視化" />
+    <meta property="og:description" lang="en" content="Visualization of academic conferences networked by citation">
+    <meta property="og:description" lang="ja" content="学会を引用関係に基づいて可視化したものです．ノードが学会，エッジが引用関係をあらわしています．">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maruta.github.io/visnet-dml/full/" />
+    <meta property="og:image" content="ogpimage.png" />
 
-    h3 {
-        margin-top: 0;
-        font-size: 10px;
-        font-weight: inherit;
-    }
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    #note a {
-        pointer-events: all;
-        color: inherit;
-    }
+        body {
+            font: 11px sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: rgb(0, 4, 46);
+        }
 
-    ol {
-        padding-left: 2em;
-        margin-bottom: 0;
-    }
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
-    ol li {
-        list-style-type: none;
-        counter-increment: cnt;
-        position: relative;
-    }
+        #note {
+            pointer-events: none;
+            position: absolute;
+            bottom: 0;
+            font-size: 9px;
+            font-weight: 200;
+            margin-left: 20px;
+            color: #cccccc;
+        }
 
-    ol li:before {
-        display: marker;
-        position: absolute;
-        left: -2em;
-        content: "[" counter(cnt) "] ";
-    }
+        h2 {
+            font-size: 10px;
+            font-weight: inherit;
+            margin-bottom: 0;
+        }
 
-    .overlay {
-        fill: none;
-        pointer-events: all;
-    }
+        h3 {
+            margin-top: 0;
+            font-size: 10px;
+            font-weight: inherit;
+        }
 
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
+        #note a {
+            pointer-events: all;
+            color: inherit;
+        }
 
-    .node {
-        stroke: #666;
-        stroke-opacity: 1;
-        stroke-width: 1px;
-        opacity: 1;
-        fill: #fff;
-    }
+        ol {
+            padding-left: 2em;
+            margin-bottom: 0;
+        }
 
-    .node.Automatica {
-        fill: #ff8585;
-        stroke: #000;
-    }
+        ol li {
+            list-style-type: none;
+            counter-increment: cnt;
+            position: relative;
+        }
 
-    .node.ICML {
-        fill: #9affa4;
-        stroke: #000;
-    }
+        ol li:before {
+            display: marker;
+            position: absolute;
+            left: -2em;
+            content: "[" counter(cnt) "] ";
+        }
 
-    .node.active {
-        fill: #ff4d00;
-        stroke-width: 1.5px;
-        stroke: #ff4d00;
-    }
+        .overlay {
+            fill: none;
+            pointer-events: all;
+        }
 
-    .edge {
-        fill: none;
-        stroke: #3c74b5;
-        stroke-opacity: 0.4;
-    }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
 
-    .edge.active {
-        stroke: #ff0000;
-        stroke-opacity: 1;
-    }
+        .node {
+            stroke: #666;
+            stroke-opacity: 1;
+            stroke-width: 0.1px;
+            opacity: 1;
+            fill: #fff;
+        }
 
-    .tooltip {
-        position: absolute;
-        color: #fff;
-        padding: 2px 4px;
-        background: rgba(34, 51, 112, 0.6);
-        pointer-events: none;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-    }
-    .tooltip .citation{
-      font-size:80%;
-    }
-    .tooltip .cname{
-      font-weight:bolder;
-    }
-    .tooltip .cnum{
-      font-weight:bolder;
-    }
-</style>
+        .node.Automatica {
+            fill: #ff8585;
+            stroke: #000;
+        }
+
+        .node.ICML {
+            fill: #9affa4;
+            stroke: #000;
+        }
+
+        .node.active {
+            fill: #ff4d00;
+            stroke-width: 1.5px;
+            stroke: #ff4d00;
+        }
+
+        .node.searched {
+            fill: #fff500;
+            stroke-width: 1.5px;
+            stroke: #fff500;
+        }
+
+        .edge {
+            fill: none;
+            stroke: #3c74b5;
+            stroke-opacity: 0.4;
+        }
+
+        .edge.active {
+            stroke: #ff0000;
+            stroke-opacity: 1;
+        }
+
+        .edge.searched {
+            stroke: #fff500;
+            stroke-opacity: 1;
+        }
+
+        .tooltip {
+            position: absolute;
+            color: #fff;
+            padding: 2px 4px;
+            background: rgba(34, 51, 112, 0.6);
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .tooltip .citation {
+            font-size: 80%;
+        }
+
+        .tooltip .cname {
+            font-weight: bolder;
+        }
+
+        .tooltip .cnum {
+            font-weight: bolder;
+        }
+
+        #searchbox {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            font-weight: 200;
+            width: 20em;
+            padding: 5px;
+            background: rgba(0, 4, 46, 0.5);
+            border: solid 0.5px #cccccc;
+            color: #cccccc;
+        }
+    </style>
+</head>
 
 <body>
-    <script src="//d3js.org/d3.v4.min.js"></script>
+
+    <script src="//d3js.org/d3.v5.min.js"></script>
 
     <script>
         var width = 960,
             height = 500,
             asratio = height / width,
-            xdomain = [-700, 1000],
+            xdomain = [-400, 800],
             ydomainsize = (xdomain[1] - xdomain[0]) * asratio,
-            ydomaincenter = -100;
+            ydomaincenter = -0;
         ydomain = [ydomaincenter - ydomainsize / 2, ydomaincenter + ydomainsize / 2];
 
         function selectorSanitize(val) {
-            return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
+            return "sel" + val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
         }
 
         var xValue = function(d) {
@@ -164,8 +214,8 @@
             }
 
         var svg_base = d3.select("body").append("svg")
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .attr("viewBox", "0 0 "+width+" "+height)
+            .attr("preserveAspectRatio", "xMidYMid slice")
+            .attr("viewBox", "0 0 " + width + " " + height)
             .append("g");
         svg_base.append("rect")
             .attr("class", "overlay")
@@ -173,20 +223,59 @@
             .attr("height", "100%");
 
         var svg = svg_base
-            .call(d3.zoom().scaleExtent([0.6, 3]).on("zoom", zoom))
+            .call(d3.zoom().scaleExtent([0.6, 30]).on("zoom", zoom))
             .append("g");
 
         function zoom() {　
             svg.attr("transform", d3.event.transform);
+            if (tooltip_target != null) {
+                placeTooltip(tooltip_target);
+            }
         }
 
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        d3.json("data.small.json", function(error, data) {
+        var tooltip_target = null;
+
+        function showTooltip(tgt) {
+            tooltip_target = tgt;
+            var d = tgt.data()[0];
+            tooltip.transition()
+                .duration(10)
+                .style("opacity", .9);
+            tooltip.html("<span class='cname'>" + d.label + "</span><br><span class='citation'>cited by <span class='cnum'>" + d.size + "</span></span>")
+            placeTooltip(tgt);
+        }
+
+        function placeTooltip(tgt) {
+            var ctm = tgt.node().getCTM();
+            var coords = getScreenCoords(tgt.attr("cx"), tgt.attr("cy"), ctm);
+            tooltip.style("left", (coords.x + 5) + "px")
+                .style("top", (coords.y - 18) + "px");
+
+        }
+
+        function hideTooltip() {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        }
+
+        function getScreenCoords(x, y, ctm) {
+            var xn = ctm.e + x * ctm.a + y * ctm.c;
+            var yn = ctm.f + x * ctm.b + y * ctm.d;
+            return {
+                x: xn,
+                y: yn
+            };
+        }
+
+        d3.json("data.small.json").then(function(data) {
             var edges = [];
             var nodes = {};
+            var searchNodeList = document.getElementById('nodelist');
             data.nodes.forEach(function(d) {
                 nodes[d.id] = {
                     x: d.x,
@@ -196,8 +285,12 @@
                     id: d.id,
                     size: d.attributes.cited
                 };
+                var option = document.createElement('option');
+                option.value = d.id;
+                searchNodeList.appendChild(option);
             });
             data.edges.forEach(function(d) {
+                if(d.size<200) return;
                 var edge = {
                     points: [{
                         x: nodes[d.source].x,
@@ -215,7 +308,7 @@
                 };
                 edges.push(edge);
             });
-            var wScale = d3.scaleLinear().domain([50, 8500]).range([0.5, 10]);
+            var wScale = d3.scaleLinear().domain([50, 30000]).range([0.1, 10]);
             var lineFunction = d3.line().x(function(d) {
                 return xScale(d.x);
             }).y(function(d) {
@@ -244,17 +337,12 @@
                 .attr("cx", xMap)
                 .attr("cy", yMap)
                 .attr("r", function(d) {
-                    return 0.6 * Math.pow(d.size, 0.2)
+                    return 0.1 * Math.pow(d.size, 0.2)
                 })
                 .on("mouseover", function(d) {
                     d3.select(this).classed('active', true);
                     d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('active', true);
-                    tooltip.transition()
-                        .duration(10)
-                        .style("opacity", .9);
-                    tooltip.html("<span class='cname'>"+d.label+"</span><br><span class='citation'>cited by <span class='cnum'>"+d.size+"</span></span>")
-                        .style("left", (d3.event.pageX + 5) + "px")
-                        .style("top", (d3.event.pageY - 18) + "px");
+                    showTooltip(d3.select(this));
                 })
                 .on("mouseout", function(d) {
                     d3.select(this).classed('active', false);
@@ -263,10 +351,35 @@
                         .duration(500)
                         .style("opacity", 0);
                 });
+
         });
+
+        var oldquery = "";
+
+        function updateSearch(e) {
+            var query = selectorSanitize(e.value);
+            if (query != "") {
+                var searched = d3.select("." + query);
+                if (!searched.empty()) {
+                    searched.classed('searched', true);
+                    var d = searched.data()[0];
+                    d3.selectAll('.edge-' + selectorSanitize(d.id)).classed('searched', true);
+                    showTooltip(searched);
+                } else {
+                    hideTooltip();
+                }
+                if (query != oldquery) {
+                    if (oldquery != "") {
+                        d3.select("." + oldquery).classed('searched', false);
+                        d3.selectAll('.edge-' + oldquery).classed('searched', false);
+                    }
+                    oldquery = query;
+                }
+            }
+        }
     </script>
     <div id="note">
-        <h2>Visualization of Citation Network around Machine Learning (+ Control Theory)</h2>
+        <h2>Visualization of Citation Network</h2>
         <h3>by Ichiro Maruta</h3>
         <p>
             This visualization is based on <a href="https://aminer.org/citation">Citation Network Dataset</a> by <a href="https://aminer.org/">AMiner</a> [1]<br>
@@ -275,6 +388,9 @@
             </ol>
         </p>
     </div>
+    <input id="searchbox" name="searchbox" type="text" placeholder="search..." list="nodelist" oninput="updateSearch(this)" />
+    <datalist id="nodelist"></datalist>
+
 </body>
 
 </html>
