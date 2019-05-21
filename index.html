@@ -290,7 +290,7 @@
                 searchNodeList.appendChild(option);
             });
             data.edges.forEach(function(d) {
-                if(d.size<200) return;
+                if(d.size<400) return;
                 var edge = {
                     points: [{
                         x: nodes[d.source].x,
