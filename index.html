@@ -98,10 +98,10 @@
 
         .node {
             stroke: #666;
-            stroke-opacity: 1;
+            stroke-opacity: 0.8;
             stroke-width: 0.1px;
-            opacity: 1;
-            fill: #fff;
+            opacity: 0.8;
+            fill: rgba(255,255,255,0.8);
         }
 
         .node.Automatica {
@@ -337,7 +337,7 @@
                 .attr("cx", xMap)
                 .attr("cy", yMap)
                 .attr("r", function(d) {
-                    return 0.1 * Math.pow(d.size, 0.2)
+                    return 0.15 * Math.pow(d.size, 0.2)
                 })
                 .on("mouseover", function(d) {
                     d3.select(this).classed('active', true);
@@ -377,6 +377,7 @@
                 }
             }
         }
+
     </script>
     <div id="note">
         <h2>Visualization of Citation Network</h2>
@@ -390,7 +391,12 @@
     </div>
     <input id="searchbox" name="searchbox" type="text" placeholder="search..." list="nodelist" oninput="updateSearch(this)" />
     <datalist id="nodelist"></datalist>
-
+    <script>
+        if(window.location.hash=="#minimum") {
+            document.getElementById('note').style.display='none';
+            document.getElementById('searchbox').style.display='none';
+        }
+    </script>
 </body>
 
 </html>
